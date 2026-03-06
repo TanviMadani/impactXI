@@ -7,3 +7,7 @@ xgboost
 pandas
 scikit-learn
 numpy
+python-multipart
+aiofiles
+pyarrow
+joblib
