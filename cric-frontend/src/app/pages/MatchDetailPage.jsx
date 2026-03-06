@@ -27,7 +27,7 @@ export function MatchDetailPage() {
       })
       .catch((e) => {
         console.error(e);
-        setError('Failed to load match');
+        setError(e?.message || 'Failed to load match');
         setMatch(null);
       })
       .finally(() => setLoading(false));
@@ -65,6 +65,8 @@ export function MatchDetailPage() {
   const dateStr = match.date
     ? new Date(match.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     : null;
+  const teamA = match.team1 ?? match.teamA ?? match.team_a ?? null;
+  const teamB = match.team2 ?? match.teamB ?? match.team_b ?? null;
 
   return (
     <div className="min-h-screen py-8">
@@ -79,11 +81,8 @@ export function MatchDetailPage() {
         <div className="bg-card rounded-xl p-8 border border-border mb-6">
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <h1 className="font-['Poppins'] font-bold text-2xl md:text-3xl text-foreground">
-              {match.team1 || 'Team 1'} vs {match.team2 || 'Team 2'}
+              {teamA || `Match #${match.match_id ?? matchId}`} {teamB ? `vs ${teamB}` : ''}
             </h1>
-            {!match.team1 && !match.team2 && (
-              <span className="font-['Inter'] text-muted-foreground">Match #{match.match_id}</span>
-            )}
           </div>
           {dateStr && (
             <p className="font-['Inter'] text-muted-foreground">{dateStr}</p>

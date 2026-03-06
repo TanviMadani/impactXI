@@ -12,7 +12,9 @@ function isConnectionError(err) {
   return (
     err?.message === "Failed to fetch" ||
     err?.name === "TypeError" ||
-    (err?.message && err.message.toLowerCase().includes("network"))
+    (err?.message && err.message.toLowerCase().includes("network")) 
+
+    
   );
 }
 
@@ -65,5 +67,10 @@ export function fetchPlayerInnings(playerId, limit = 20) {
 // Matches
 export function fetchMatchDetails(matchId) {
   return request(`/matches/${matchId}`);
+}
+
+export function fetchMatchesList(limit = 50, offset = 0) {
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset) }).toString();
+  return request(`/matches?${params}`);
 }
 
