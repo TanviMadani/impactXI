@@ -13,9 +13,7 @@ ADMIN_KEY = "hackathon-secret"
 DATA_VERSION = "v1"
 
 
-# Project-root-relative ML model configuration
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-ML_OUTPUT_DIR = PROJECT_ROOT / "ML" / "outputs_impact_metric"
-ML_MODEL_DIR = ML_OUTPUT_DIR / "models"
+# Model configuration (now bundled in data_store for deployment)
+ML_MODEL_DIR = DATA_DIR / "models"
 
 BAT_MODEL_PATH = ML_MODEL_DIR / "xgb_batting_expected_runs.json"

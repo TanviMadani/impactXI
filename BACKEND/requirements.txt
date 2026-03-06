@@ -4,3 +4,6 @@ polars
 pydantic
 cachetools
 xgboost
+pandas
+scikit-learn
+numpy
