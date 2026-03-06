@@ -1,5 +1,5 @@
 import polars as pl
-from .config import PLAYER_ROLLING_FILE, PLAYER_INNINGS_FILE, MATCH_INDEX_FILE
+from .config import settings
 
 player_rolling_df = None
 player_innings_df = None
@@ -15,9 +15,9 @@ def load_data():
     global player_rolling_df, player_innings_df, match_index_df
     global player_index, innings_index, match_index
 
-    player_rolling_df = pl.read_parquet(PLAYER_ROLLING_FILE)
-    player_innings_df = pl.read_parquet(PLAYER_INNINGS_FILE)
-    match_index_df = pl.read_parquet(MATCH_INDEX_FILE)
+    player_rolling_df = pl.read_parquet(settings.PLAYER_ROLLING_FILE)
+    player_innings_df = pl.read_parquet(settings.PLAYER_INNINGS_FILE)
+    match_index_df = pl.read_parquet(settings.MATCH_INDEX_FILE)
 
     player_index = {
         row["player_id"]: row

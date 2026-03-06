@@ -2,19 +2,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.loader import load_data
+from app.core.config import settings
 from app.api import routes_players, routes_matches, routes_leaderboards, routes_admin, routes_ml
 
 app = FastAPI(title="Cricket Impact Metric API")
 
-# Allow frontend (Vite dev server) to call this API
-origins = [
-    "http://localhost:5173",
-    "http://localhost:5174",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

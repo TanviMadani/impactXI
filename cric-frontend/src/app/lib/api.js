@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  // Backward-compatible with older env var name
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://localhost:8000";
 
 /** Message shown when backend is not running (connection refused / failed to fetch). */
 export const API_OFFLINE_MESSAGE =

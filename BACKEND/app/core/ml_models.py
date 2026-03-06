@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 import pandas as pd
 
-from app.core.config import BAT_MODEL_PATH
+from app.core.config import settings
 
 _bat_model = None
 
@@ -22,14 +22,14 @@ def _load_batting_model():
             "Install it with `pip install xgboost` and ensure trained models exist."
         ) from exc
 
-    if not BAT_MODEL_PATH.exists():  # pragma: no cover - runtime guard
+    if not settings.BAT_MODEL_PATH.exists():  # pragma: no cover - runtime guard
         raise FileNotFoundError(
-            f"Batting model file not found at {BAT_MODEL_PATH}. "
+            f"Batting model file not found at {settings.BAT_MODEL_PATH}. "
             "Run the ML training pipeline to generate it."
         )
 
     model = XGBRegressor()
-    model.load_model(str(BAT_MODEL_PATH))
+    model.load_model(str(settings.BAT_MODEL_PATH))
     _bat_model = model
     return _bat_model
 
