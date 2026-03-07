@@ -2,6 +2,9 @@
 
 A full-stack application that computes and displays an **Impact Metric** for IPL (Indian Premier League) cricket players. The metric combines batting and bowling performance with match context and pressure, normalized to a 0–100 scale (50 = neutral). The system includes an ML pipeline, a REST API, and a React frontend for leaderboards, player profiles, and match impact views.
 
+**Demo:** [Live demo](https://impact-xi-bay.vercel.app/)
+
+
 ---
 
 ## About the Project
