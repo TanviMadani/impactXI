@@ -45,6 +45,11 @@ export function fetchImpactLeaderboard(limit = 50) {
   return request(`/leaderboards/impact?${params}`);
 }
 
+/** List all teams from backend (ML-derived from player datastore). */
+export function fetchTeams() {
+  return request("/leaderboards/teams");
+}
+
 export function fetchPlayersSearch(q = "", limit = 20) {
   const params = new URLSearchParams({ q, limit: String(limit) }).toString();
   return request(`/players?${params}`);

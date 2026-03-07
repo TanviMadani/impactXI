@@ -5,6 +5,17 @@ from app.core import loader
 router = APIRouter(prefix="/leaderboards", tags=["leaderboards"])
 
 
+@router.get("/teams")
+def list_teams():
+    """Return all unique team names from the player datastore (from ML pipeline)."""
+    teams = set()
+    for p in loader.player_index.values():
+        t = p.get("team")
+        if t is not None and str(t).strip() and str(t).strip().lower() not in ("nan", "unknown", ""):
+            teams.add(str(t).strip())
+    return sorted(teams)
+
+
 @router.get("/impact")
 def impact_leaderboard(limit: int = 50):
 

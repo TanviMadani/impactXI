@@ -103,6 +103,29 @@ def load_match_dates_from_info(ipl_dir: str) -> pd.DataFrame:
     return out
 
 
+def load_player_teams_from_innings() -> dict:
+    """
+    Build player -> team from batting_innings.csv and bowling_innings.csv.
+    Uses batting_team for batters, bowling_team for bowlers; if a player appears in both, batting takes precedence.
+    """
+    player_team = {}
+    batting_path = os.path.join(BASE_DIR, "batting_innings.csv")
+    bowling_path = os.path.join(BASE_DIR, "bowling_innings.csv")
+    if os.path.exists(batting_path):
+        b = pd.read_csv(batting_path)
+        if "batter" in b.columns and "batting_team" in b.columns:
+            for _, row in b.drop_duplicates("batter", keep="last").iterrows():
+                player_team[str(row["batter"]).strip()] = str(row["batting_team"]).strip() or "Unknown"
+    if os.path.exists(bowling_path):
+        b = pd.read_csv(bowling_path)
+        if "bowler" in b.columns and "bowling_team" in b.columns:
+            for _, row in b.drop_duplicates("bowler", keep="last").iterrows():
+                p = str(row["bowler"]).strip()
+                if p and p not in player_team:
+                    player_team[p] = str(row["bowling_team"]).strip() or "Unknown"
+    return player_team
+
+
 def compute_weighted_last10(scores: np.ndarray) -> float:
     """
     scores: array of recent scores in chronological order (old->new), length <= LAST_N
@@ -147,6 +170,8 @@ def main():
         # fallback: match_id numeric sort
         impact["match_id_num"] = pd.to_numeric(impact["match_id"], errors="coerce")
         impact = impact.sort_values(["player", "match_id_num", "match_id"], ascending=[True, True, True]).reset_index(drop=True)
+
+    player_team = load_player_teams_from_innings()
 
     # For each player: compute rolling last-10 recency weighted IM
     # We also produce a trend table with the last 10 match impacts.

@@ -3,14 +3,21 @@ import { motion } from 'motion/react';
 import { PlayerCard } from '../components/PlayerCard';
 import { Input } from '../components/ui/input';
 import { Search } from 'lucide-react';
-import { fetchImpactLeaderboard, fetchPlayersSearch } from '../lib/api';
+import { fetchImpactLeaderboard, fetchPlayersSearch, fetchTeams } from '../lib/api';
 
 export function PlayersPage() {
   const [players, setPlayers] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [teamFilter, setTeamFilter] = useState('all');
+
+  useEffect(() => {
+    fetchTeams()
+      .then((list) => setTeams(Array.isArray(list) ? list : []))
+      .catch(() => setTeams([]));
+  }, []);
 
   const loadLeaderboard = useCallback(() => {
     setLoading(true);
@@ -73,12 +80,11 @@ export function PlayersPage() {
     return () => clearTimeout(t);
   }, [searchQuery, runSearch, loadLeaderboard]);
 
-  const teams = [
-    'all',
-    ...Array.from(new Set(players.map((p) => p.team).filter(Boolean)))
-      .filter((t) => String(t).trim())
-      .sort((a, b) => String(a).localeCompare(String(b))),
-  ];
+  const teamOptions = teams.length > 0
+    ? teams
+    : Array.from(new Set(players.map((p) => p.team).filter(Boolean)))
+        .filter((t) => String(t).trim())
+        .sort((a, b) => String(a).localeCompare(String(b)));
   const filteredPlayers = players.filter((p) => {
     const matchTeam = teamFilter === 'all' || p.team === teamFilter;
     return matchTeam;
@@ -115,16 +121,19 @@ export function PlayersPage() {
                 className="pl-9 font-['Inter'] bg-background border-border"
               />
             </div>
-            <select
-              value={teamFilter}
-              onChange={(e) => setTeamFilter(e.target.value)}
-              className="bg-background border border-border rounded-lg px-3 py-2 text-foreground font-['Inter'] text-sm"
-            >
-              <option value="all">All teams</option>
-              {teams.filter((t) => t && t !== 'all').map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+            <label className="font-['Inter'] text-sm text-foreground flex items-center gap-2">
+              Filter by team:
+              <select
+                value={teamFilter}
+                onChange={(e) => setTeamFilter(e.target.value)}
+                className="bg-background border border-border rounded-lg px-3 py-2 text-foreground font-['Inter'] text-sm min-w-[180px]"
+              >
+                <option value="all">All teams</option>
+                {teamOptions.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </label>
             <div className="flex items-center justify-end">
               <span className="font-['Inter'] text-sm text-muted-foreground">
                 {filteredPlayers.length} player{filteredPlayers.length !== 1 ? 's' : ''}
