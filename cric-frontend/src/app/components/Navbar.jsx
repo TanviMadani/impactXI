@@ -44,9 +44,7 @@ export function Navbar() {
             <Link to="/matches" className={linkClass('/matches')}>
               Matches
             </Link>
-            <Link to="/#about-metric" className={linkClass('/methodology')}>
-              About Metric
-            </Link>
+            
           </div>
         </div>
       </div>
