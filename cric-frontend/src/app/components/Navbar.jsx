@@ -5,7 +5,9 @@ export function Navbar() {
   const location = useLocation();
 
   const isActive = (path) =>
-    location.pathname === path || location.pathname.startsWith(path + '/');
+    path === '/'
+      ? location.pathname === '/'
+      : location.pathname === path || location.pathname.startsWith(path + '/');
 
   const linkClass = (path) =>
     `font-['Inter'] transition-colors ${
@@ -27,6 +29,9 @@ export function Navbar() {
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
+            <Link to="/" className={linkClass('/')}>
+              Home
+            </Link>
             <Link to="/players" className={linkClass('/players')}>
               Players
             </Link>
@@ -39,7 +44,7 @@ export function Navbar() {
             <Link to="/matches" className={linkClass('/matches')}>
               Matches
             </Link>
-            <Link to="/methodology" className={linkClass('/methodology')}>
+            <Link to="/#about-metric" className={linkClass('/methodology')}>
               About Metric
             </Link>
           </div>

@@ -182,27 +182,39 @@ export function PlayerDetailPage() {
                     </td>
                   </tr>
                 )}
-                {innings.map((row, idx) => (
-                  <motion.tr
-                    key={`${row.match_id}-${idx}`}
-                    className="border-b border-border hover:bg-muted/30 transition-colors"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.03 }}
-                  >
-                    <td className="py-3 px-4 font-['JetBrains_Mono'] text-sm text-muted-foreground">{idx + 1}</td>
-                    <td className="py-3 px-4 font-['Inter'] text-sm">{row.date || '—'}</td>
-                    <td className="py-3 px-4 font-['Inter'] text-sm">Match #{row.match_id}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className="font-['JetBrains_Mono'] font-semibold"
-                        style={{ color: getImpactColor(row.im_innings_0_100) }}
-                      >
-                        {row.im_innings_0_100 != null ? Number(row.im_innings_0_100).toFixed(1) : '—'}
-                      </span>
-                    </td>
-                  </motion.tr>
-                ))}
+                {innings.map((row, idx) => {
+                  const matchId = row.match_id ?? row.matchId;
+                  const hasValidMatch = matchId != null && String(matchId).trim() !== '' && String(matchId) !== 'NA';
+                  return (
+                    <motion.tr
+                      key={`${matchId}-${idx}`}
+                      className="border-b border-border hover:bg-muted/30 transition-colors"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                    >
+                      <td className="py-3 px-4 font-['JetBrains_Mono'] text-sm text-muted-foreground">{idx + 1}</td>
+                      <td className="py-3 px-4 font-['Inter'] text-sm">{row.date || '—'}</td>
+                      <td className="py-3 px-4 font-['Inter'] text-sm">
+                        {hasValidMatch ? (
+                          <Link to={`/matches/${matchId}`} className="text-primary hover:underline font-medium">
+                            Match #{matchId}
+                          </Link>
+                        ) : (
+                          <>Match #{matchId ?? '—'}</>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className="font-['JetBrains_Mono'] font-semibold"
+                          style={{ color: getImpactColor(row.im_innings_0_100) }}
+                        >
+                          {row.im_innings_0_100 != null ? Number(row.im_innings_0_100).toFixed(1) : '—'}
+                        </span>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

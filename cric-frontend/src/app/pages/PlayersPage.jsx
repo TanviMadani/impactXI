@@ -73,7 +73,12 @@ export function PlayersPage() {
     return () => clearTimeout(t);
   }, [searchQuery, runSearch, loadLeaderboard]);
 
-  const teams = ['all', ...Array.from(new Set(players.map((p) => p.team).filter(Boolean)))];
+  const teams = [
+    'all',
+    ...Array.from(new Set(players.map((p) => p.team).filter(Boolean)))
+      .filter((t) => String(t).trim())
+      .sort((a, b) => String(a).localeCompare(String(b))),
+  ];
   const filteredPlayers = players.filter((p) => {
     const matchTeam = teamFilter === 'all' || p.team === teamFilter;
     return matchTeam;

@@ -281,10 +281,13 @@ def build_bowling_innings_table(balls_df: pd.DataFrame) -> pd.DataFrame:
     # Runs conceded to bowler (exclude byes/legbyes)
     runs_conceded = (runs_off_bat + extras - byes - legbyes).clip(lower=0)
 
+    bowling_team = coalesce_cols(df, ["bowling_team", "bowling_team_name"], fill_value="").astype(str)
+
     df_tmp = pd.DataFrame({
         "match_id": df["match_id"].astype(str),
         "innings": df["innings"],
         "bowler": df["bowler"].astype(str),
+        "bowling_team": bowling_team,
         "runs_conceded": runs_conceded.astype(int),
         "legal_ball": is_legal.astype(int),
         "wicket_bowler": bowler_wicket.astype(int),
@@ -300,6 +303,7 @@ def build_bowling_innings_table(balls_df: pd.DataFrame) -> pd.DataFrame:
         dot_balls=("dot_ball", "sum"),
         wides=("wides", "sum"),
         noballs=("noballs", "sum"),
+        bowling_team=("bowling_team", "first"),
     )
 
     grouped["overs"] = grouped["balls"] / 6.0

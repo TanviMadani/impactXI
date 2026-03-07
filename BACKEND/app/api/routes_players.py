@@ -19,7 +19,7 @@ def search_players(q: str = "", limit: int = 20):
                 "name": p["player_name"],
                 "team": p.get("team"),
                 "currentIM": p["im_rolling_0_100"],
-                "band": p["band"]
+                "band": p.get("band"),
             })
 
         if len(results) >= limit:
@@ -42,7 +42,7 @@ def player_summary(player_id: int):
         "team": player.get("team"),
         "currentIM": player["im_rolling_0_100"],
         "baseline": 50,
-        "band": player["band"],
+        "band": player.get("band"),
         "asOfDate": player["as_of_date"]
     }
 
@@ -65,7 +65,7 @@ def player_impact(player_id: int, window: int = 10):
         "playerId": player_id,
         "currentIM": player["im_rolling_0_100"],
         "baseline": 50,
-        "band": player["band"],
+        "band": player.get("band"),
         "window": window,
         "trend": trend
     }

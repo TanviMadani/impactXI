@@ -19,7 +19,8 @@ def impact_leaderboard(limit: int = 50):
             "playerId": p["player_id"],
             "name": p["player_name"],
             "team": p.get("team"),
-            "im": p["im_rolling_0_100"]
+            "im": p["im_rolling_0_100"],
+            "band": p.get("band"),
         }
         for p in players
     ]

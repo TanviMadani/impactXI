@@ -153,7 +153,7 @@ def build_player_innings(trend_last10_csv: str, player_id_map: Dict[str, int] | 
     date_col = pick_col(df, ["date", "match_date", "timestamp"])
 
     # Case A: already long format with a per-innings score
-    score_long = pick_col(df, ["im_innings_0_100", "innings_impact", "impact", "im", "impact_score"])
+    score_long = pick_col(df, ["im_innings_0_100", "impact_score_0_100", "innings_impact", "impact", "im", "impact_score"])
     if score_long and (match_col or date_col):
         df = ensure_player_id(df, player_name_col=name_col, player_id_col=pid_col)
         out = pd.DataFrame({

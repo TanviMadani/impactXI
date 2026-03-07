@@ -172,9 +172,11 @@ def main():
 
         im_rows.append({
             "player": player,
+            "player_name": player,
             "impact_metric_last10": round(final_im, 2),
             "matches_available": int(len(g)),
-            "last_match_id": last_match_id
+            "last_match_id": last_match_id,
+            "team": player_team.get(str(player).strip(), "Unknown"),
         })
 
         # Trend: keep last 10 matches for frontend chart
