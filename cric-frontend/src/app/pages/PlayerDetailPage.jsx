@@ -99,7 +99,7 @@ export function PlayerDetailPage() {
                   </>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-muted/50 rounded-lg p-4">
                   <div className="text-xs text-muted-foreground font-['Inter'] mb-1">Baseline</div>
                   <div className="font-['JetBrains_Mono'] text-xl font-semibold text-foreground">50</div>
@@ -109,6 +109,14 @@ export function PlayerDetailPage() {
                   <div className="font-['Inter'] font-semibold" style={{ color: getImpactColor(score) }}>
                     {summary.band || '—'}
                   </div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="text-xs text-muted-foreground font-['Inter'] mb-1">Form</div>
+                  <div className="font-['Inter'] font-semibold text-foreground">{summary.form || '—'}</div>
+                </div>
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <div className="text-xs text-muted-foreground font-['Inter'] mb-1">Matches played</div>
+                  <div className="font-['JetBrains_Mono'] text-xl font-semibold text-foreground">{summary.matchesPlayed ?? '—'}</div>
                 </div>
               </div>
             </div>

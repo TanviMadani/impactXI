@@ -89,7 +89,7 @@ export function MatchDetailPage() {
           )}
         </div>
 
-        <div className="bg-card rounded-xl p-6 border border-border">
+        <div className="bg-card rounded-xl p-6 border border-border mb-6">
           <div className="flex items-center gap-2 mb-6">
             <Trophy className="h-5 w-5 text-primary" />
             <h2 className="font-['Poppins'] font-semibold text-xl text-foreground">
@@ -129,6 +129,65 @@ export function MatchDetailPage() {
             </div>
           )}
         </div>
+
+        {(match.batting_card?.length > 0 || match.bowling_card?.length > 0) && (
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {match.batting_card?.length > 0 && (
+              <div className="bg-card rounded-xl p-6 border border-border">
+                <h2 className="font-['Poppins'] font-semibold text-lg text-foreground mb-4">Batting</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm font-['Inter']">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground">
+                        <th className="text-left py-2 px-2">Player</th>
+                        <th className="text-right py-2 px-2">Runs</th>
+                        <th className="text-right py-2 px-2">Balls</th>
+                        <th className="text-right py-2 px-2">SR</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {match.batting_card.map((row, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-2 text-foreground">{row.player ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.runs ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.balls ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.strike_rate != null ? Number(row.strike_rate).toFixed(1) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {match.bowling_card?.length > 0 && (
+              <div className="bg-card rounded-xl p-6 border border-border">
+                <h2 className="font-['Poppins'] font-semibold text-lg text-foreground mb-4">Bowling</h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm font-['Inter']">
+                    <thead>
+                      <tr className="border-b border-border text-muted-foreground">
+                        <th className="text-left py-2 px-2">Bowler</th>
+                        <th className="text-right py-2 px-2">Wkts</th>
+                        <th className="text-right py-2 px-2">Runs</th>
+                        <th className="text-right py-2 px-2">Econ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {match.bowling_card.map((row, i) => (
+                        <tr key={i} className="border-b border-border/50">
+                          <td className="py-2 px-2 text-foreground">{row.player ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.wickets ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.runs_conceded ?? '—'}</td>
+                          <td className="py-2 px-2 text-right font-['JetBrains_Mono']">{row.economy != null ? Number(row.economy).toFixed(1) : '—'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <p className="mt-6 font-['Inter'] text-sm text-muted-foreground">
           Impact in this match is computed from performance, context, and pressure. Who really changed the match?

@@ -21,10 +21,7 @@ export function Navbar() {
           <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
             <BarChart3 className="h-8 w-8 text-primary" />
             <div className="flex flex-col">
-              <span className="font-['Poppins'] font-bold text-xl text-primary">IPL Meter</span>
-              <span className="font-['Inter'] text-xs text-muted-foreground -mt-1">
-                Impact Metric
-              </span>
+              <span className="font-['Poppins'] font-bold text-xl text-primary">impactXI</span>
             </div>
           </Link>
 

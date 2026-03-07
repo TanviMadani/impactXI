@@ -39,6 +39,8 @@ LAST_N = 10
 # Recency weights: oldest->newest (0.1..1.0)
 WEIGHTS = np.linspace(0.1, 1.0, LAST_N)
 
+from team_utils import normalize_team_name
+
 
 def load_match_dates_from_info(ipl_dir: str) -> pd.DataFrame:
     """
@@ -107,6 +109,7 @@ def load_player_teams_from_innings() -> dict:
     """
     Build player -> team from batting_innings.csv and bowling_innings.csv.
     Uses batting_team for batters, bowling_team for bowlers; if a player appears in both, batting takes precedence.
+    Applies normalize_team_name() so the same franchise is not split.
     """
     player_team = {}
     batting_path = os.path.join(BASE_DIR, "batting_innings.csv")
@@ -115,14 +118,16 @@ def load_player_teams_from_innings() -> dict:
         b = pd.read_csv(batting_path)
         if "batter" in b.columns and "batting_team" in b.columns:
             for _, row in b.drop_duplicates("batter", keep="last").iterrows():
-                player_team[str(row["batter"]).strip()] = str(row["batting_team"]).strip() or "Unknown"
+                raw = str(row["batting_team"]).strip() or "Unknown"
+                player_team[str(row["batter"]).strip()] = normalize_team_name(raw) or "Unknown"
     if os.path.exists(bowling_path):
         b = pd.read_csv(bowling_path)
         if "bowler" in b.columns and "bowling_team" in b.columns:
             for _, row in b.drop_duplicates("bowler", keep="last").iterrows():
                 p = str(row["bowler"]).strip()
                 if p and p not in player_team:
-                    player_team[p] = str(row["bowling_team"]).strip() or "Unknown"
+                    raw = str(row["bowling_team"]).strip() or "Unknown"
+                    player_team[p] = normalize_team_name(raw) or "Unknown"
     return player_team
 
 
@@ -212,6 +217,10 @@ def main():
 
     im_df = pd.DataFrame(im_rows).sort_values("impact_metric_last10", ascending=False).reset_index(drop=True)
     trend_df = pd.concat(trend_rows, ignore_index=True)
+
+    for col in ["team", "batting_team", "bowling_team", "player_team", "opposition"]:
+        if col in im_df.columns:
+            im_df[col] = im_df[col].apply(normalize_team_name)
 
     im_df.to_csv(OUT_IM_PATH, index=False)
     trend_df.to_csv(OUT_TREND_PATH, index=False)

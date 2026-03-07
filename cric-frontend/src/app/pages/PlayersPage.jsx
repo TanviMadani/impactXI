@@ -15,7 +15,10 @@ export function PlayersPage() {
 
   useEffect(() => {
     fetchTeams()
-      .then((list) => setTeams(Array.isArray(list) ? list : []))
+      .then((list) => {
+        const arr = Array.isArray(list) ? list : [];
+        setTeams(arr.map((t) => (typeof t === 'object' && t?.name != null ? t.name : t)));
+      })
       .catch(() => setTeams([]));
   }, []);
 

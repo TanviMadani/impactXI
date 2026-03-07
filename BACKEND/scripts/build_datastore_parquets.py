@@ -15,6 +15,7 @@ from app.core.datastore_mapping import (
     build_player_rolling,
     build_player_innings,
     build_match_index,
+    normalize_team_name,
 )
 
 def main():
@@ -67,10 +68,45 @@ def main():
     player_innings.to_parquet(p2, index=False)
     match_index.to_parquet(p3, index=False)
 
+    # Optional: team_player_master for squad counts (use this instead of player_impact_metric for team size)
+    team_master_csv = os.path.join(ml_dir, "team_player_master.csv")
+    if os.path.exists(team_master_csv):
+        team_master = pd.read_csv(team_master_csv)
+        for col in ["team", "batting_team", "bowling_team"]:
+            if col in team_master.columns:
+                team_master[col] = team_master[col].apply(normalize_team_name)
+        p4 = os.path.join(out_dir, "team_player_master.parquet")
+        team_master.to_parquet(p4, index=False)
+        print(" -", p4, "rows:", len(team_master))
+
+    # Optional: match scorecard from batting_innings + bowling_innings (for full match result view)
+    bat_inn = os.path.join(ml_dir, "batting_innings.csv")
+    bowl_inn = os.path.join(ml_dir, "bowling_innings.csv")
+    if os.path.exists(bat_inn) and os.path.exists(bowl_inn):
+        bat_df = pd.read_csv(bat_inn)
+        bowl_df = pd.read_csv(bowl_inn)
+        if "batting_team" in bat_df.columns:
+            bat_df["batting_team"] = bat_df["batting_team"].apply(normalize_team_name)
+        if "bowling_team" in bowl_df.columns:
+            bowl_df["bowling_team"] = bowl_df["bowling_team"].apply(normalize_team_name)
+        bat_cols = ["match_id", "team", "player", "runs", "balls", "fours", "sixes", "strike_rate"]
+        bat_df = bat_df.rename(columns={"batting_team": "team", "batter": "player"})
+        bat_card = bat_df[[c for c in bat_cols if c in bat_df.columns]].copy()
+        bowl_cols = ["match_id", "team", "player", "runs_conceded", "balls", "wickets", "economy"]
+        bowl_df = bowl_df.rename(columns={"bowling_team": "team", "bowler": "player"})
+        bowl_card = bowl_df[[c for c in bowl_cols if c in bowl_df.columns]].copy()
+        p5 = os.path.join(out_dir, "match_batting_card.parquet")
+        p6 = os.path.join(out_dir, "match_bowling_card.parquet")
+        bat_card.to_parquet(p5, index=False)
+        bowl_card.to_parquet(p6, index=False)
+        print(" -", p5, "rows:", len(bat_card))
+        print(" -", p6, "rows:", len(bowl_card))
+
     print("\n✅ Saved datastore Parquets:")
     print(" -", p1, "rows:", len(player_rolling))
     print(" -", p2, "rows:", len(player_innings))
     print(" -", p3, "rows:", len(match_index))
+    print("\n⚠️  Restart the backend (or POST /admin/reload with X-Admin-Key) so the API and frontend serve this new data.")
 
 if __name__ == "__main__":
     main()

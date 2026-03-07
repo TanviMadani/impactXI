@@ -4,6 +4,8 @@ import math
 import pandas as pd
 from typing import List
 
+from team_utils import normalize_team_name
+
 DATA_DIR = "./ipl"
 BASE_DIR = "./outputs_impact_metric"
 OUT_DIR = "./outputs_impact_metric"
@@ -96,6 +98,9 @@ def load_folder_to_dataframe(data_dir: str) -> pd.DataFrame:
             print(f"Loaded {i}/{len(match_csvs)} match CSVs...")
 
     balls_df = pd.concat(balls_parts, ignore_index=True) if balls_parts else pd.DataFrame()
+    for col in ["batting_team", "bowling_team"]:
+        if col in balls_df.columns:
+            balls_df[col] = balls_df[col].apply(normalize_team_name)
     print("balls_df:", balls_df.shape)
     return balls_df
 

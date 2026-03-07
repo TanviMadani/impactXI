@@ -69,6 +69,11 @@ export function fetchPlayerInnings(playerId, limit = 20) {
   return request(`/players/${playerId}/innings?${params}`);
 }
 
+/** List of matches this player played (unique match IDs that exist in matches table). */
+export function fetchPlayerMatches(playerId) {
+  return request(`/players/${playerId}/matches`);
+}
+
 // Matches
 export function fetchMatchDetails(matchId) {
   return request(`/matches/${matchId}`);

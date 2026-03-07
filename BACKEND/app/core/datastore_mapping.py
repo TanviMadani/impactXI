@@ -8,6 +8,30 @@ import pandas as pd
 
 
 # ----------------------------
+# 0) Franchise name canonicalization (must match ML/team_utils.py)
+# ----------------------------
+TEAM_NAME_MAP = {
+    "Rising Pune Supergiant": "Rising Pune Supergiants",
+    "Rising Pune Supergiants": "Rising Pune Supergiants",
+    "Kings XI Punjab": "Punjab Kings",
+    "Punjab Kings": "Punjab Kings",
+    "Royal Challengers Bangalore": "Royal Challengers Bengaluru",
+    "Royal Challengers Bengaluru": "Royal Challengers Bengaluru",
+    "Delhi Daredevils": "Delhi Capitals",
+    "Delhi Capitals": "Delhi Capitals",
+}
+
+
+def normalize_team_name(x):
+    if x is None:
+        return x
+    if pd.isna(x):
+        return x
+    s = str(x).strip()
+    return TEAM_NAME_MAP.get(s, s)
+
+
+# ----------------------------
 # 1) Column inference helpers
 # ----------------------------
 
@@ -95,22 +119,25 @@ def build_player_rolling(player_metric_csv: str) -> pd.DataFrame:
     if not name_col:
         raise ValueError(f"Could not infer player name column in {player_metric_csv}. Columns: {list(df.columns)}")
 
-    pid_col = pick_col(df, ["player_id", "pid", "id"])
+    # Avoid "id" as candidate: pick_col's contains-match would select "match_id" as pid_col
+    pid_col = pick_col(df, ["player_id", "pid"])
 
+    # ML pipeline writes impact_metric_last10; prefer it so website matches ML output
     score_col = pick_col(df, [
-        "im_rolling_0_100", "rolling_impact", "impact_rolling", "impact_score",
-        "player_impact", "im_score", "im"
+        "impact_metric_last10", "im_rolling_0_100", "rolling_impact", "impact_rolling",
+        "impact_score", "player_impact", "im_score", "im"
     ])
     if not score_col:
-        # fallback: first numeric column that is not obviously an id
+        # fallback: first numeric column that is not obviously an id or match_id
         numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
-        numeric_cols = [c for c in numeric_cols if "id" not in _norm(c)]
+        numeric_cols = [c for c in numeric_cols if "id" not in _norm(c) and "match" not in _norm(c)]
         if not numeric_cols:
             raise ValueError(f"Could not find a numeric impact column in {player_metric_csv}")
         score_col = numeric_cols[0]
 
     team_col = pick_col(df, ["team", "batting_team", "bowling_team", "franchise"])
     date_col = pick_col(df, ["as_of_date", "date", "computed_at", "updated_at"])
+    matches_col = pick_col(df, ["matches_available", "matches", "match_count", "innings"])
 
     df = ensure_player_id(df, player_name_col=name_col, player_id_col=pid_col)
 
@@ -121,16 +148,23 @@ def build_player_rolling(player_metric_csv: str) -> pd.DataFrame:
     })
 
     if team_col:
-        out["team"] = df[team_col].astype(str)
+        out["team"] = df[team_col].astype(str).apply(normalize_team_name)
     if date_col:
         out["as_of_date"] = df[date_col].astype(str)
     else:
         out["as_of_date"] = "NA"
+    if matches_col:
+        out["matches_available"] = pd.to_numeric(df[matches_col], errors="coerce").fillna(0).astype(int)
+    else:
+        out["matches_available"] = 0
 
     out["band"] = out["im_rolling_0_100"].apply(band_from_score)
 
-    # stable sort
-    out = out.sort_values(["im_rolling_0_100", "player_name"], ascending=[False, True]).reset_index(drop=True)
+    # Rank by impact then by experience (more matches = tiebreaker)
+    out = out.sort_values(
+        ["im_rolling_0_100", "matches_available", "player_name"],
+        ascending=[False, False, True],
+    ).reset_index(drop=True)
     return out
 
 
@@ -147,7 +181,8 @@ def build_player_innings(trend_last10_csv: str, player_id_map: Dict[str, int] | 
     if not name_col:
         raise ValueError(f"Could not infer player name column in {trend_last10_csv}")
 
-    pid_col = pick_col(df, ["player_id", "pid", "id"])
+    # Avoid "id" as candidate: pick_col's contains-match would select "match_id" as pid_col
+    pid_col = pick_col(df, ["player_id", "pid"])
 
     match_col = pick_col(df, ["match_id", "mid"])
     date_col = pick_col(df, ["date", "match_date", "timestamp"])
@@ -163,7 +198,8 @@ def build_player_innings(trend_last10_csv: str, player_id_map: Dict[str, int] | 
         })
         out["match_id"] = df[match_col].astype(str) if match_col else "NA"
         out["date"] = df[date_col].astype(str) if date_col else "NA"
-        out["inning_index"] = range(1, len(out) + 1)
+        # Per-player inning index (1=oldest, N=newest) so API sort by inning_index desc = most recent first
+        out["inning_index"] = out.groupby("player_id").cumcount() + 1
         return out
 
     # Case B: wide format: last10 columns like impact_1..impact_10 / last10_1.. / im1..im10 etc.
@@ -280,8 +316,8 @@ def build_match_index(match_player_impact_csv: str, all_info_parquet: Optional[s
 
                 meta_small = pd.DataFrame({"match_id": meta[meta_mid].astype(str)})
                 if date_col: meta_small["date"] = meta[date_col].astype(str)
-                if team1: meta_small["team1"] = meta[team1].astype(str)
-                if team2: meta_small["team2"] = meta[team2].astype(str)
+                if team1: meta_small["team1"] = meta[team1].astype(str).apply(normalize_team_name)
+                if team2: meta_small["team2"] = meta[team2].astype(str).apply(normalize_team_name)
                 if venue: meta_small["venue"] = meta[venue].astype(str)
 
                 out = out.merge(meta_small.drop_duplicates("match_id"), on="match_id", how="left")

@@ -3,6 +3,8 @@ import glob
 import pandas as pd
 from typing import List, Tuple, Optional
 
+from team_utils import normalize_team_name
+
 
 # ---------------------------
 # Config
@@ -172,6 +174,14 @@ def load_folder_to_dataframes(data_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame
     balls_df = pd.concat(balls_parts, ignore_index=True) if balls_parts else pd.DataFrame()
     info_df = pd.concat(info_parts, ignore_index=True) if info_parts else pd.DataFrame()
 
+    # Canonicalize franchise names before any grouping/merging
+    for col in ["batting_team", "bowling_team"]:
+        if col in balls_df.columns:
+            balls_df[col] = balls_df[col].apply(normalize_team_name)
+    for col in info_df.columns:
+        if "team" in col.lower():
+            info_df[col] = info_df[col].apply(normalize_team_name)
+
     print("---- Loaded combined shapes ----")
     print("balls_df:", balls_df.shape)
     print("info_df :", info_df.shape)
@@ -319,6 +329,72 @@ def build_bowling_innings_table(balls_df: pd.DataFrame) -> pd.DataFrame:
     return grouped
 
 
+def build_team_player_master(balls_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Build a team–player master from raw match participation (batter, non-striker, bowler, player_dismissed).
+    Use this for squad counts, filters, and franchise rosters; do not use player_impact_metric for squad size.
+    """
+    df = balls_df.copy()
+
+    for col in ["batting_team", "bowling_team"]:
+        if col in df.columns:
+            df[col] = df[col].apply(normalize_team_name)
+
+    rows = []
+
+    batter_col = "striker" if "striker" in df.columns else ("batter" if "batter" in df.columns else None)
+    non_striker_col = "non_striker" if "non_striker" in df.columns else None
+
+    if batter_col and "batting_team" in df.columns:
+        rows.append(
+            df[["match_id", "batting_team", batter_col]]
+            .rename(columns={"batting_team": "team", batter_col: "player"})
+        )
+
+    if non_striker_col and "batting_team" in df.columns:
+        rows.append(
+            df[["match_id", "batting_team", non_striker_col]]
+            .rename(columns={"batting_team": "team", non_striker_col: "player"})
+        )
+
+    if "bowler" in df.columns and "bowling_team" in df.columns:
+        rows.append(
+            df[["match_id", "bowling_team", "bowler"]]
+            .rename(columns={"bowling_team": "team", "bowler": "player"})
+        )
+
+    if "player_dismissed" in df.columns and "batting_team" in df.columns:
+        rows.append(
+            df[["match_id", "batting_team", "player_dismissed"]]
+            .rename(columns={"batting_team": "team", "player_dismissed": "player"})
+        )
+
+    if not rows:
+        return pd.DataFrame(columns=["team", "player", "matches"])
+
+    master = pd.concat(rows, ignore_index=True)
+    master["player"] = master["player"].astype(str).str.strip()
+    master["team"] = master["team"].astype(str).str.strip()
+
+    master = master[
+        (master["player"] != "")
+        & (master["player"].str.lower() != "nan")
+        & (master["team"] != "")
+        & (master["team"].str.lower() != "nan")
+    ]
+
+    master = master.drop_duplicates(["match_id", "team", "player"])
+
+    summary = (
+        master.groupby(["team", "player"], as_index=False)
+        .agg(matches=("match_id", "nunique"))
+        .sort_values(["team", "matches", "player"], ascending=[True, False, True])
+        .reset_index(drop=True)
+    )
+
+    return summary
+
+
 def main():
     ensure_outdir(OUT_DIR)
 
@@ -345,6 +421,11 @@ def main():
 
     batting_innings.to_csv(os.path.join(OUT_DIR, "batting_innings.csv"), index=False)
     bowling_innings.to_csv(os.path.join(OUT_DIR, "bowling_innings.csv"), index=False)
+
+    # Team–player master from raw participation (for squad counts, not impact-based)
+    team_player_master = build_team_player_master(balls_df)
+    team_player_master.to_csv(os.path.join(OUT_DIR, "team_player_master.csv"), index=False)
+    print("Saved:", os.path.join(OUT_DIR, "team_player_master.csv"), team_player_master.shape)
 
     print("\n✅ Done!")
     print("Saved:", os.path.join(OUT_DIR, "batting_innings.csv"), batting_innings.shape)

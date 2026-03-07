@@ -39,6 +39,17 @@ class Settings:
     MATCH_INDEX_FILE: Path = Path(
         os.getenv("MATCH_INDEX_FILE", str(DATA_STORE_DIR / "match_index.parquet"))
     )
+    # Optional: for squad counts (use this instead of player_impact_metric for team size)
+    TEAM_PLAYER_MASTER_FILE: Path = Path(
+        os.getenv("TEAM_PLAYER_MASTER_FILE", str(DATA_STORE_DIR / "team_player_master.parquet"))
+    )
+    # Optional: for match result view (scorecard)
+    MATCH_BATTING_CARD_FILE: Path = Path(
+        os.getenv("MATCH_BATTING_CARD_FILE", str(DATA_STORE_DIR / "match_batting_card.parquet"))
+    )
+    MATCH_BOWLING_CARD_FILE: Path = Path(
+        os.getenv("MATCH_BOWLING_CARD_FILE", str(DATA_STORE_DIR / "match_bowling_card.parquet"))
+    )
 
     # Models (inference)
     ML_MODEL_DIR: Path = Path(os.getenv("ML_MODEL_DIR", str(DATA_STORE_DIR / "models")))
