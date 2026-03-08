@@ -52,7 +52,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* About the metric (merged from Methodology page) */}
+      {/* About the metric (merged from Methodology page) - commented out
       <section id="about-metric" className="py-12 scroll-mt-20 bg-muted/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="font-['Poppins'] font-bold text-3xl mb-2 text-foreground">
@@ -64,6 +64,7 @@ export function LandingPage() {
           <MethodologyContent embedMode />
         </div>
       </section>
+      */}
     </div>
   );
 }
