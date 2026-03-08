@@ -65,7 +65,6 @@ export function LandingPage() {
         </div>
       </section>
       */}
-      <MethodologyContent embedMode />
     </div>
   );
 }
