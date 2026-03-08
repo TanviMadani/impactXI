@@ -51,7 +51,7 @@ export function LandingPage() {
           </motion.div>
         </div>
       </section>
-
+      
       {/* About the metric (merged from Methodology page) - commented out
       <section id="about-metric" className="py-12 scroll-mt-20 bg-muted/20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,6 +65,7 @@ export function LandingPage() {
         </div>
       </section>
       */}
+      <MethodologyContent embedMode />
     </div>
   );
 }
